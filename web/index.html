@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YKI-video-generator · 本地短视频创作台</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar wrap">
+    <a class="brand" href="/" aria-label="YKI-video-generator 首页"><span class="brand-icon" aria-hidden="true">YKI</span><span class="brand-copy"><span class="brand-name">YKI-video-generator</span><span class="brand-note">本地短视频创作台</span></span></a>
+    <div class="runtime"><span id="connection-dot" class="dot"></span><span id="connection-text">正在连接本地服务</span><span id="version"></span></div>
+  </header>
+  <main class="wrap">
+    <section class="intro"><span class="eyebrow">YOUR IDEA, FRAME BY FRAME</span><h1>一句灵感，开始成片。</h1><p>从分镜、中文旁白到视频合成，在你的电脑上完成。</p></section>
+    <div class="workspace">
+      <div class="main-column">
+        <section class="card composer" aria-labelledby="compose-title">
+          <div class="section-heading"><h2 id="compose-title">开始一个新故事</h2><span class="step-tag">01 / 创意</span></div>
+          <form id="create-form">
+            <label class="field-label" for="prompt">你想拍什么？</label>
+            <textarea id="prompt" name="prompt" rows="4" maxlength="3000" placeholder="例如：一只小猫在雨后的街角，找到了回家的路。" required></textarea>
+            <div class="mode-grid" role="group" aria-label="生成模式">
+              <label class="mode-option"><input type="radio" name="mode" value="real"><span><strong>真实生成</strong><small>调用已安装的本地模型</small></span><span class="mode-symbol">◈</span></label>
+              <label class="mode-option"><input type="radio" name="mode" value="demo" checked><span><strong>流程演示</strong><small>色块视频与静音，验证流程</small></span><span class="mode-symbol">▷</span></label>
+            </div>
+            <div class="compose-footer"><label class="select-label" for="shot-count">镜头数量<select id="shot-count"><option value="3">3 镜头 · 快速测试</option><option value="6">6 镜头 · 完整短片</option></select></label><button id="create-button" class="button primary" type="submit">创建并生成 <span aria-hidden="true">↗</span></button></div>
+            <p id="mode-note" class="help-text">演示模式不会生成 AI 画面，也不会调用配音模型。</p>
+          </form>
+        </section>
+        <section id="project-panel" class="card project-panel" hidden aria-labelledby="project-title">
+          <div class="section-heading"><div><span class="eyebrow">CURRENT PROJECT</span><h2 id="project-title"></h2></div><span id="project-status" class="badge"></span></div>
+          <p id="project-prompt" class="project-prompt"></p>
+          <div class="progress-heading"><span id="project-stage">准备中</span><strong id="progress-text">0%</strong></div>
+          <progress id="progress" max="100" value="0" aria-label="项目生成进度"></progress>
+          <div id="project-error" class="inline-error" hidden></div>
+          <div class="project-actions"><span id="project-mode" class="help-text"></span><div><button id="resume-button" class="button secondary" type="button" hidden>继续生成</button><button id="cancel-button" class="button subtle" type="button" hidden>停止任务</button></div></div>
+          <div id="output-panel" class="output-panel" hidden><div class="section-heading"><h3>成片预览</h3><a id="download-output" class="text-link" download>下载 MP4 ↗</a></div><video id="output-video" controls preload="metadata" playsinline></video><p class="help-text">重做镜头或选择历史版本会自动更新成片。也可再次合成当前版本。</p><button id="reassemble-button" class="button secondary" type="button">重新合成</button></div>
+          <div id="shots-section" hidden><div class="section-heading shot-heading"><h3>镜头工作台</h3><span class="help-text">保留好的镜头，只重做需要的部分</span></div><div id="shots"></div></div>
+          <details class="event-log" open><summary>运行记录<span id="event-count"></span></summary><ol id="events"></ol></details>
+        </section>
+        <section id="empty-state" class="empty-state"><span class="empty-icon">▤</span><h2>你的第一个故事，从这里开始。</h2><p>输入一句话，先用 3 个镜头验证创作流程。<br>生成过程、分镜和成片会显示在这里。</p></section>
+      </div>
+      <aside class="sidebar">
+        <section class="card system-card"><div class="section-heading"><h2>部署状态</h2><button id="refresh-status" class="icon-button" type="button" aria-label="刷新部署状态">↻</button></div><div id="readiness" class="readiness">检查运行环境…</div><details id="diagnostics"><summary>查看环境检查</summary><ul id="checks" class="checks"></ul></details><p class="help-text">首次使用真实生成前，请先运行 Windows 安装脚本完成模型部署。</p></section>
+        <section class="card history-card"><div class="section-heading"><h2>最近的故事</h2><span id="project-count" class="count">0</span></div><div id="history"><p class="muted">正在读取项目…</p></div></section>
+        <p class="sidebar-note">创意与项目保存在本机。<br>首次安装需要联网下载模型。</p>
+      </aside>
+    </div>
+  </main>
+  <footer class="wrap footer"><span>YKI-video-generator / 把灵感留在画面里</span><span>本地工作流 · Windows NVIDIA GPU</span></footer>
+  <div id="toast" role="alert" hidden></div>
+</body>
+</html>

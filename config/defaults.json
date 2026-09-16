@@ -1,0 +1,33 @@
+{
+  "host": "127.0.0.1",
+  "port": 8765,
+  "mode": "real",
+  "projects_dir": "projects",
+  "llama": {
+    "executable": "runtime/llama/llama-server.exe",
+    "model": "models/llm/Qwen3.8-27B-UD-Q4_K_M.gguf",
+    "port": 8189,
+    "context": 8192,
+    "startup_timeout": 600,
+    "request_timeout": 900
+  },
+  "comfy": {
+    "python": "runtime/comfy-portable/ComfyUI_windows_portable/python_embeded/python.exe",
+    "directory": "runtime/comfy-portable/ComfyUI_windows_portable/ComfyUI",
+    "port": 8188,
+    "startup_timeout": 600,
+    "render_timeout": 14400,
+    "width": 768,
+    "height": 1344,
+    "steps": 20
+  },
+  "tts": {
+    "model_dir": "models/kokoro-multi-lang-v1_1",
+    "speaker_id": 3,
+    "speed": 1.0,
+    "threads": 4
+  },
+  "video": {"width": 720, "height": 1280, "shot_count": 6},
+  "ffmpeg": "",
+  "ffprobe": ""
+}
