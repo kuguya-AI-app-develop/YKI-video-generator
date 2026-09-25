@@ -1,0 +1,17 @@
+{
+  "llama": {
+    "gpu_layers": "auto",
+    "context": 8192,
+    "startup_timeout": 1800,
+    "request_timeout": 3600
+  },
+  "comfy": {
+    "width": 384,
+    "height": 672,
+    "steps": 20,
+    "fast_disk": true,
+    "disable_pinned_memory": true,
+    "startup_timeout": 1800,
+    "render_timeout": 28800
+  }
+}

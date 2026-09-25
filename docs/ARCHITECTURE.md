@@ -50,7 +50,7 @@ Windows 安装器不安装显卡驱动、不注册全局 Python。缺少必需�
 
 ## 已知边界与验证分层
 
-- 实机目标是 Windows 11、32GB NVIDIA Blackwell GPU；macOS 只运行 DEMO 管线。
+- 原始实机目标是 Windows 11 / RTX5090；现增加 4070S 12GB / 32GB RAM 实验配置，采用自动 GPU 层数与 ComfyUI 磁盘辅助加载，仍须实机验收。macOS 只运行 DEMO 管线。
 - DEMO 是明确标记的卡片与静音，不调用语言、语音或视频模型；真实模式报错时不会回退成 DEMO。
 - H3-Base 的文本条件维持人物描述，但没有参考图、身份锁定、角色资产库或完整 2K 增强链。
 - 每镜头旁白过长会停止并要求修改；不自动删减用户台词。
@@ -60,3 +60,5 @@ Windows 安装器不安装显卡驱动、不注册全局 Python。缺少必需�
 - 合格率、人物一致性、长任务速度和峰值内存仍需目标 5090 测试。发布前需要人工审片。
 
 运行 `python -m unittest discover -s tests -v` 做本地回归；真实模型验收按 [WINDOWS_ACCEPTANCE.md](WINDOWS_ACCEPTANCE.md) 记录。
+
+各模型的运行条件、NVFP4 在 Ada 上的回退路径及配置边界见 [HARDWARE.md](HARDWARE.md)。

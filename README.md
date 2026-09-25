@@ -1,25 +1,23 @@
 # YKI-video-generator
 
-面向 **Windows 11 + NVIDIA RTX 5090 32GB** 的本地短视频生成软件。在 macOS 开发和演示，在 Windows 由启动脚本安装运行环境和模型；输入一句故事梗概，生成分镜、中文旁白、竖屏视频与字幕。
+面向 **Windows 11 + NVIDIA GPU** 的本地短视频生成软件。原始目标为 RTX 5090，现提供 **RTX 4070 Super 12GB 显存 / 32GB 系统内存实验配置**。在 macOS 开发和演示，在 Windows 由启动脚本安装运行环境和模型；输入一句故事梗概，生成分镜、中文旁白、竖屏视频与字幕。
 
-**当前版本为 0.1.0 测试版。macOS 的 28 项自动测试和 DEMO 流程已通过，Windows 安装与 5090 上的真实 Qwen → Kokoro → H3 链路尚未完成实机验收。** DEMO 使用标注色块和静音，不能证明真实模型的画质、速度或成功率。
+**当前版本为 0.1.0 测试版。macOS 的 34 项自动测试和 DEMO 流程已通过，Windows 安装及 4070S/5090 上的真实 Qwen → Kokoro → H3 链路尚未完成实机验收。** DEMO 使用标注色块和静音，不能证明真实模型的画质、速度或成功率。
 
-仓库：[kuguya-AI-app-develop/YKI-video-generator](https://github.com/kuguya-AI-app-develop/YKI-video-generator)。当前为私有仓库，访问和克隆需要有权限的 GitHub 账号。
+仓库：[kuguya-AI-app-develop/YKI-video-generator](https://github.com/kuguya-AI-app-develop/YKI-video-generator)。当前为公开仓库，可直接克隆。逐个模型的运行条件、官方依据和 4070S 试跑步骤见 [硬件核查与实验配置](docs/HARDWARE.md)。安装器已撤销约 32GB 显存硬门槛；128GB 系统内存也不是统一最低要求。
 
 ## 在另一台设备接手开发
 
-先安装 Git，并使用具备仓库访问权限的账号完成 GitHub HTTPS 凭据配置。已安装 GitHub CLI 时，可运行：
+先安装 Git，然后执行；读取公开源码不需要登录 GitHub：
 
 ```bash
-gh auth login
-gh auth setup-git
 git clone https://github.com/kuguya-AI-app-develop/YKI-video-generator.git
 cd YKI-video-generator
 ```
 
-也可直接使用已配置好的 Git 凭据运行上述 `git clone`。不要把 token 写进克隆地址、源码或配置示例。
+推送贡献时再使用有权限的账号配置 Git 凭据，不要把 token 写进 URL 或源码。
 
-接手顺序：先按下文启动 DEMO，运行测试，再阅读 [开发交接](docs/HANDOFF.md)、[架构](docs/ARCHITECTURE.md) 和 [领域说明](CONTEXT.md)。AI 编程代理还应阅读 [AGENTS.md](AGENTS.md)。下一阶段的主要工作是完成 [Windows 5090 实机验收](docs/WINDOWS_ACCEPTANCE.md)。
+接手顺序：先按下文启动 DEMO，运行测试，再阅读 [开发交接](docs/HANDOFF.md)、[架构](docs/ARCHITECTURE.md) 和 [领域说明](CONTEXT.md)。AI 编程代理还应阅读 [AGENTS.md](AGENTS.md)。下一阶段的主要工作是完成 [Windows 实机验收](docs/WINDOWS_ACCEPTANCE.md)。
 
 ### macOS 开发与演示
 
@@ -48,8 +46,8 @@ uv pip install --python .venv/bin/python Pillow==12.3.0
 ### Windows 部署与开发
 
 1. 克隆仓库到可写本地磁盘，例如 `D:\YKI-video-generator`；也可解压 `YKI-video-generator-0.1.0-windows.zip`。不要从 ZIP 预览窗口内启动。
-2. 准备 Windows 11 x64、约 32GB 显存的 NVIDIA GPU。运行 `nvidia-smi`，其 `CUDA Version` 必须至少为 **13.3**。驱动不足时从 [NVIDIA 官方网站](https://www.nvidia.com/en-us/drivers/)更新并重启，无需额外安装 CUDA Toolkit。
-3. 首次安装至少预留 **100 GiB** 磁盘空间；建议系统内存 **128GB**，低于 64GB 时安装器会提示。视频与历史版本会继续占用磁盘。
+2. 准备 Windows 11 x64 和 NVIDIA GPU。4070S / 32GB 内存先按 [实验步骤](docs/HARDWARE.md)复制 `config/experimental-4070s-32gb.json` 到个人配置，再启动安装。低于约 32GB 显存时安装器会提示实验风险，允许继续。运行 `nvidia-smi`，其 `CUDA Version` 必须至少为 **13.3**。驱动不足时从 [NVIDIA 官方网站](https://www.nvidia.com/en-us/drivers/)更新并重启，无需额外安装 CUDA Toolkit。
+3. 首次安装至少预留 **100 GiB** 磁盘空间。系统内存没有经本项目实测确认的统一最低值；32GB 需配合卸载与磁盘读取进行实验，不能保证只降低速度而不会内存不足。视频、历史版本和换页会继续占用磁盘。
 4. 双击 `Start-Windows.bat`，首次自动进入安装器；也可先双击 `Install-Windows.bat` 单独安装。
 5. 安装完成后打开 [本地创作台](http://127.0.0.1:8765)。先完成「流程演示」「3 镜头」，再新建「真实生成」项目。
 
@@ -76,7 +74,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1 -Pla
 
 1. Qwen3.8-27B GGUF 编写 3 或 6 个镜头，输出英文画面提示词、中文旁白和角色描述。
 2. Qwen 服务退出释放显存。Kokoro 在 CPU 生成中文 WAV，短旁白补尾部静音；超过 14.5 秒的旁白会报错并要求缩短。
-3. ComfyUI 使用量化 H3-Base 按镜头顺序生成画面，默认生成分辨率为 768×1344。
+3. ComfyUI 使用量化 H3-Base 按镜头顺序生成画面，默认生成分辨率为 768×1344，4070S 实验配置为 384×672。
 4. FFmpeg 合成 **720×1280、24 fps、H.264/AAC MP4**，烧录中文字幕和「AI 生成」标识，另存 SRT。音轨使用中文旁白，当前不混入 H3 原始声音。
 
 首条可以输入：`雨后的街角，一只穿黄色雨衣的小猫发现了一颗发光的种子，并把它带回家。`
@@ -146,7 +144,7 @@ node --check web/app.js
 .venv/bin/python scripts/package.py
 ```
 
-Windows 已安装环境使用 `.\runtime\app-env\Scripts\python.exe` 替换上述 Python 路径。若系统 PATH 没有 FFmpeg/FFprobe，媒体测试会被跳过；**28 项通过且 0 skipped** 才与现有 Mac 验证相当。在 Windows 可把安装生成的 FFmpeg `bin` 目录加入当前终端 PATH 再测，详见 `config/models.lock.json` 的运行时路径。
+Windows 已安装环境使用 `.\runtime\app-env\Scripts\python.exe` 替换上述 Python 路径。若系统 PATH 没有 FFmpeg/FFprobe，媒体测试会被跳过；请检查 skipped 数为 0，以覆盖媒体测试；2026-09-16 的基线为 28 项，新增硬件配置测试后的实际计数见验证记录。在 Windows 可把安装生成的 FFmpeg `bin` 目录加入当前终端 PATH 再测，详见 `config/models.lock.json` 的运行时路径。
 
 打包输出 `dist/YKI-video-generator-0.1.0-windows.zip` 及 `.zip.sha256`。包内 `PACKAGE_MANIFEST.json` 记录逐文件哈希；只包含白名单源码、启动脚本、配置、工作流、测试和文档，排除模型、项目视频、运行环境、日志、本机设置与 Git 数据。ZIP 是源码启动包，并非已编译 EXE。
 
@@ -176,10 +174,10 @@ codegraph index
 
 ## 已知限制与接手优先级
 
-- 当前重点是 Windows 5090 首轮实测；还没有已验证的速度、峰值显存/内存、成功率或完整离线运行结论。
+- 当前重点是 Windows 4070S / 32GB 内存首轮实验与后续 5090 验收；还没有已验证的速度、峰值显存/内存、成功率或完整离线运行结论。
 - 角色一致性依赖文本条件，没有参考图、人物身份锁定或角色资产库。
 - 当前为 H3-Base，不含官方完整 2K 增强流程；无自动降画质应对显存不足的策略。
 - 没有音乐库、口型同步、自动审片、自动投稿或多用户服务。发布前人工检查画面、旁白与字幕。
 - 接手后依次完成：Windows 安装 → 3 镜头 DEMO → 3 镜头真实生成 → 重做/历史/停止恢复 → 6 镜头和断网验收。
 
-详细用户操作见 [使用说明书 Word](docs/YKI-video-generator_使用说明书_v0.1.0.docx)。模型与依赖各有独立许可，来源和使用条件见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)；H3 有地域、用途及商业许可条件。本仓库尚未为原创源码指定开源许可证。
+详细用户操作见 [使用说明书 Word](docs/YKI-video-generator_使用说明书_v0.1.0.docx)。该手册为 2026-09-16 版本，其中硬件建议以更新的 [硬件核查](docs/HARDWARE.md) 为准。模型与依赖各有独立许可，来源和使用条件见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)；H3 有地域、用途及商业许可条件。本仓库尚未为原创源码指定开源许可证。

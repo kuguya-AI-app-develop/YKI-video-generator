@@ -1,6 +1,6 @@
 # YKI-video-generator 开发约定
 
-先读 `README.md`、`CONTEXT.md` 和 `docs/HANDOFF.md`。当前为 0.1.0 Windows 5090 测试版，真实 GPU 链路尚未验收，不得把 DEMO 当作真实生成成功。
+先读 `README.md`、`CONTEXT.md` 和 `docs/HANDOFF.md`。当前为 0.1.0 Windows NVIDIA 测试版（含 4070S / 32GB RAM 实验配置），真实 GPU 链路尚未验收，不得把 DEMO 当作真实生成成功。
 
 ## 修改范围与验证
 

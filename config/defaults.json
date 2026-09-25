@@ -8,6 +8,7 @@
     "model": "models/llm/Qwen3.8-27B-UD-Q4_K_M.gguf",
     "port": 8189,
     "context": 8192,
+    "gpu_layers": "auto",
     "startup_timeout": 600,
     "request_timeout": 900
   },
@@ -15,6 +16,8 @@
     "python": "runtime/comfy-portable/ComfyUI_windows_portable/python_embeded/python.exe",
     "directory": "runtime/comfy-portable/ComfyUI_windows_portable/ComfyUI",
     "port": 8188,
+    "fast_disk": false,
+    "disable_pinned_memory": false,
     "startup_timeout": 600,
     "render_timeout": 14400,
     "width": 768,

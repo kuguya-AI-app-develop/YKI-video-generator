@@ -186,7 +186,8 @@ if ($Plan) {
     Write-Host ('Runtime downloads: {0:N2} GiB; model downloads: {1:N2} GiB' -f ($RuntimeBytes / 1GB), ($ModelBytes / 1GB))
     Write-Host 'Application tools, caches and Python stay under runtime/. No global Python PATH or registration changes.'
     Write-Host 'If required VC++ DLLs are missing, the verified official Microsoft system runtime installer runs (UAC may be required).'
-    Write-Host 'Windows 11 x64, NVIDIA 5090-class GPU, nvidia-smi CUDA Version >= 13.3 required.'
+    Write-Host 'Windows 11 x64, NVIDIA GPU, nvidia-smi CUDA Version >= 13.3 required. RTX 5090 32 GB is the primary target.'
+    Write-Host 'Lower-memory GPUs are experimental; see config/experimental-4070s-32gb.json for RTX 4070 Super 12 GB / 32 GB RAM settings. Real generation is not yet validated.'
     Write-Host 'Models include Qwen, H3 and Chinese/English Kokoro TTS. Allow at least 100 GiB of free disk space.'
     exit 0
 }
@@ -245,7 +246,9 @@ try {
         $Columns = $Row -split ','
         if ($Columns.Count -ge 2 -and [int]$Columns[1].Trim() -ge 30000) { $HasEnoughVram = $true }
     }
-    if (-not $HasEnoughVram) { throw 'This preset requires an NVIDIA GPU with approximately 32 GB VRAM (at least 30000 MiB reported).' }
+    if (-not $HasEnoughVram) {
+        Write-Warning 'GPU memory is below the primary 32 GB target. Lower-memory operation is experimental and real generation is not yet validated. Use config/experimental-4070s-32gb.json for RTX 4070 Super 12 GB / 32 GB RAM; CPU/disk offloading may be slow or run out of memory.'
+    }
     $Drive = Get-PSDrive -Name ([IO.Path]::GetPathRoot($ProjectRoot).Substring(0, 1))
     # Count missing archive/model bytes and budget extraction plus Python wheels separately.
     $MissingBytes = [long]0
@@ -262,7 +265,10 @@ try {
         throw ('Insufficient disk space: {0:N1} GiB free; at least {1:N1} GiB needed for remaining downloads, environments and extraction.' -f ($Drive.Free / 1GB), ($NeededBytes / 1GB))
     }
     $RamBytes = (Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory
-    if ($RamBytes -lt 60GB) { Write-Warning 'Less than 64 GB system RAM detected. H3 CPU offloading may fail or be too slow; 128 GB is recommended.' }
+    Write-Host ('System RAM: {0:N1} GiB' -f ($RamBytes / 1GB))
+    if ($RamBytes -lt 60GB) {
+        Write-Warning 'Less than 60 GiB system RAM detected. Use the low-memory experimental settings in config/experimental-4070s-32gb.json. CPU/disk offloading may be slow or run out of memory; successful generation is not guaranteed.'
+    }
 
     # Native Python wheels may also need the CRT; repair it before importing any packages.
     if (Install-MissingVcRuntime) {
@@ -308,7 +314,7 @@ try {
     Expand-RuntimeAsset (Get-Asset 'ffmpeg') 'runtime/ffmpeg' 'ffmpeg.exe'
 
     Expand-RuntimeAsset (Get-Asset 'comfy-portable') 'runtime/comfy-portable' 'python.exe' -SevenZip
-    Write-Step 'Checking installed executables and Blackwell CUDA support'
+    Write-Step 'Checking installed executables and CUDA support'
     try { Invoke-Checked (Join-Path $ProjectRoot 'runtime/llama/llama-server.exe') @('--version') }
     catch { throw "llama.cpp could not start. Check the driver and missing-DLL message. If a Microsoft VC++ DLL is missing, install the x64 runtime from https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist then rerun the installer. Details: $($_.Exception.Message)" }
     $Ffmpeg = @(Get-ChildItem -LiteralPath (Join-Path $ProjectRoot 'runtime/ffmpeg') -Filter 'ffmpeg.exe' -File -Recurse)[0].FullName

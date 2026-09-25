@@ -42,3 +42,9 @@
 - CodeGraph 初始化确认和重新索引完成，23 个源码文件、376 个节点，状态正常。索引缓存不进入 Git。
 
 本轮未重新执行 Windows 安装或真实模型推理，上述“尚未执行”项目仍待目标设备验收。
+
+## 2026-09-25 4070S 实验配置验证
+
+在 macOS 执行新增硬件配置测试 6 项、完整 unittest 34 项，全部通过且 0 skipped（完整回归耗时 10.734 秒）；`compileall -q app scripts tests` 通过。新增测试验证 llama 自动/手动 GPU 层数、配置校验、Comfy 磁盘辅助开关、localhost/单并发约束、个人配置合并与 384×672 工作流参数，不启动真实模型。
+
+官方运行条件核查及社区报告见 [HARDWARE.md](HARDWARE.md)。本机没有 PowerShell 或 NVIDIA GPU，未运行 Windows 安装器、CUDA、真实 Qwen/Kokoro/H3 或峰值内存/速度测试。4070S / 32GB RAM 配置仍为实验性，测试通过不表示目标机器已经成片。

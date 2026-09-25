@@ -51,9 +51,13 @@ class Pipeline:
 
     def _llama_process(self, cancel):
         cfg = self.config["llama"]
+        gpu_layers = cfg.get("gpu_layers", "auto")
+        if not ((isinstance(gpu_layers, str) and gpu_layers in {"auto", "all"}) or
+                (type(gpu_layers) is int and gpu_layers >= 0)):
+            raise ValueError("llama.gpu_layers 必须为 auto、all 或非负整数。")
         command = [str(resolve(self.root, cfg["executable"])), "--model", str(resolve(self.root, cfg["model"])),
                    "--host", "127.0.0.1", "--port", str(cfg["port"]), "--ctx-size", str(cfg["context"]),
-                   "--n-gpu-layers", "99", "--parallel", "1", "--jinja", "--flash-attn", "on",
+                   "--n-gpu-layers", str(gpu_layers), "--fit", "on", "--parallel", "1", "--jinja", "--flash-attn", "on",
                    "--alias", "local-planner", "--chat-template-kwargs", '{"enable_thinking":false}']
         return ManagedProcess(command, self.root, self.root / "logs/llama.log", cfg["port"], "/health", cfg["startup_timeout"], cancel)
 
@@ -62,6 +66,12 @@ class Pipeline:
         command = [str(resolve(self.root, cfg["python"])), "-s", "main.py", "--windows-standalone-build",
                    "--listen", "127.0.0.1", "--port", str(cfg["port"]), "--disable-auto-launch",
                    "--disable-metadata", "--use-pytorch-cross-attention"]
+        for name, flag in (("fast_disk", "--fast-disk"), ("disable_pinned_memory", "--disable-pinned-memory")):
+            enabled = cfg.get(name, False)
+            if type(enabled) is not bool:
+                raise ValueError(f"comfy.{name} 必须为布尔值。")
+            if enabled:
+                command.append(flag)
         return ManagedProcess(command, resolve(self.root, cfg["directory"]), self.root / "logs/comfy.log",
                               cfg["port"], "/system_stats", cfg["startup_timeout"], cancel)
 
