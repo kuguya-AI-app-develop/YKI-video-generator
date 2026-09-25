@@ -35,23 +35,46 @@ Qwen 规划结束后进程退出，随后 CPU 配音，再运行 H3。不能把 
 
 安装器仍要求的 CUDA 13.3 驱动兼容性来自锁定的 llama.cpp 二进制包，**不是所有模型的通用最低 CUDA 版本，也不是要求 RTX50 系显卡**。更新 NVIDIA 官方驱动后用 `nvidia-smi` 检查，安装时会另用 ComfyUI 的 Python 做 CUDA 运算检查。
 
+`nvidia-smi` 可能显示 `CUDA Version` 或 `CUDA UMD Version`；两种标题均受支持。若显示 `CUDA UMD Version: 13.4`，已满足 13.3 版本门槛。旧代码只识别前一种标题，可能误报 `Cannot determine driver CUDA compatibility from nvidia-smi.`；按下文更新项目后重试，无需因此重装驱动。版本检查通过仍不等于 CUDA 运算或真实生成已验收。
+
 ## 为 4070S 32GB 开始试跑
 
-仓库公开，无需 GitHub 登录即可克隆。Windows PowerShell：
+仓库公开，无需 GitHub 登录即可克隆。尚未克隆时，在 CMD 或 PowerShell 执行：
 
-```powershell
+```text
 git clone https://github.com/kuguya-AI-app-develop/YKI-video-generator.git
 cd YKI-video-generator
-# 新克隆通常没有个人配置。已有配置时先合并，避免覆盖自己的路径和设置。
+```
+
+已有仓库无需重新克隆。先退出应用，在项目根目录（例如 `D:\YKI-video-generator`）检查本地改动并更新；若更新失败，先处理报错，不要继续启动：
+
+```text
+git status
+git pull --ff-only
+```
+
+再按当前终端选择一组命令。提示符形如 `D:\YKI-video-generator>` 是 **CMD**，不能运行 PowerShell 的 `Copy-Item`：
+
+```bat
+if exist settings.local.json (
+    echo settings.local.json already exists; merge the preset before running Start-Windows.bat.
+) else (
+    copy /-Y config\experimental-4070s-32gb.json settings.local.json && Start-Windows.bat
+)
+```
+
+提示符形如 `PS D:\YKI-video-generator>` 是 **PowerShell**：
+
+```powershell
 if (Test-Path .\settings.local.json) {
     throw 'settings.local.json already exists; merge the experimental preset into it first.'
 } else {
-    Copy-Item .\config\experimental-4070s-32gb.json .\settings.local.json
+    Copy-Item .\config\experimental-4070s-32gb.json .\settings.local.json -ErrorAction Stop
     .\Start-Windows.bat
 }
 ```
 
-已有仓库先退出应用、检查 `git status`，确认无冲突后 `git pull --ff-only`，再合并配置。若之前创建的个人配置仍指定 `llama.gpu_layers: 99`，应改为 `auto`。
+两组命令均保留已有 `settings.local.json`。如果它已存在，手动合并实验配置，保留自己的路径和其他设置，再双击 `Start-Windows.bat`。若个人配置仍指定 `llama.gpu_layers: 99`，应改为 `auto`。
 
 实验配置做了这些调整：
 

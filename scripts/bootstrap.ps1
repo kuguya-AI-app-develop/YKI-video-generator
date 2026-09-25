@@ -186,7 +186,7 @@ if ($Plan) {
     Write-Host ('Runtime downloads: {0:N2} GiB; model downloads: {1:N2} GiB' -f ($RuntimeBytes / 1GB), ($ModelBytes / 1GB))
     Write-Host 'Application tools, caches and Python stay under runtime/. No global Python PATH or registration changes.'
     Write-Host 'If required VC++ DLLs are missing, the verified official Microsoft system runtime installer runs (UAC may be required).'
-    Write-Host 'Windows 11 x64, NVIDIA GPU, nvidia-smi CUDA Version >= 13.3 required. RTX 5090 32 GB is the primary target.'
+    Write-Host 'Windows 11 x64, NVIDIA GPU, nvidia-smi CUDA Version / CUDA UMD Version >= 13.3 required. RTX 5090 32 GB is the primary target.'
     Write-Host 'Lower-memory GPUs are experimental; see config/experimental-4070s-32gb.json for RTX 4070 Super 12 GB / 32 GB RAM settings. Real generation is not yet validated.'
     Write-Host 'Models include Qwen, H3 and Chinese/English Kokoro TTS. Allow at least 100 GiB of free disk space.'
     exit 0
@@ -232,12 +232,13 @@ try {
     $NvidiaSmi = Get-Command nvidia-smi.exe -ErrorAction SilentlyContinue
     if (-not $NvidiaSmi) { throw 'NVIDIA driver was not found. Install the current NVIDIA Studio driver, reboot, then retry: https://www.nvidia.com/en-us/drivers/' }
     $GpuSummary = & $NvidiaSmi.Source
-    if ($LASTEXITCODE -ne 0) { throw 'nvidia-smi failed. Repair or update the NVIDIA driver and reboot.' }
+    if ($LASTEXITCODE -ne 0) { throw "nvidia-smi failed (exit $LASTEXITCODE). Repair or update the NVIDIA driver and reboot." }
     $GpuText = $GpuSummary -join "`n"
-    if ($GpuText -notmatch 'CUDA Version:\s*(\d+\.\d+)') { throw 'Cannot determine driver CUDA compatibility from nvidia-smi.' }
+    if ($GpuText -notmatch 'CUDA(?:\s+UMD)?\s+Version\s*:\s*(\d+\.\d+)') { throw 'Cannot determine driver CUDA compatibility from nvidia-smi. Expected a numeric CUDA Version or CUDA UMD Version.' }
     if ([version]$Matches[1] -lt [version]'13.3') {
         throw "The bundled llama.cpp needs driver CUDA compatibility >= 13.3; detected $($Matches[1]). Update the NVIDIA Studio driver and reboot: https://www.nvidia.com/en-us/drivers/"
     }
+    Write-Host "Detected driver CUDA compatibility $($Matches[1]); satisfies the required >= 13.3."
     $GpuRows = & $NvidiaSmi.Source '--query-gpu=name,memory.total,driver_version' '--format=csv,noheader,nounits'
     if ($LASTEXITCODE -ne 0) { throw 'Cannot read GPU details.' }
     $HasEnoughVram = $false

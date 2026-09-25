@@ -42,9 +42,18 @@ def doctor(root: Path, config: dict, mode: str = "real") -> dict:
         add("配音引擎", importlib.util.find_spec("sherpa_onnx") is not None, "需要 sherpa-onnx 1.13.8")
         try:
             result = subprocess.run(["nvidia-smi"], capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=15)
-            match = re.search(r"CUDA Version:\s*(\d+)\.(\d+)", result.stdout)
-            good = result.returncode == 0 and match and (int(match[1]), int(match[2])) >= (13, 3)
-            add("NVIDIA 驱动", good, "本发行包需要驱动支持 CUDA 13.3；无需另装 CUDA Toolkit")
+            match = re.search(r"CUDA(?:\s+UMD)?\s+Version\s*:\s*(\d+)\.(\d+)", result.stdout)
+            if result.returncode != 0:
+                good = False
+                detail = f"nvidia-smi 执行失败（退出码 {result.returncode}）；请修复或更新 NVIDIA 驱动后重试"
+            elif not match:
+                good = False
+                detail = "无法从 nvidia-smi 解析 CUDA Version / CUDA UMD Version；请检查驱动输出，要求 >= 13.3"
+            else:
+                good = (int(match[1]), int(match[2])) >= (13, 3)
+                requirement = "满足本发行包要求（>= 13.3）" if good else "低于本发行包要求（>= 13.3），请更新 NVIDIA 驱动"
+                detail = f"检测到驱动支持 CUDA {match[1]}.{match[2]}；{requirement}；无需另装 CUDA Toolkit"
+            add("NVIDIA 驱动", good, detail)
             memory = subprocess.run(["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader,nounits"],
                                     capture_output=True, text=True, timeout=10)
             add("显卡信息", memory.returncode == 0, memory.stdout.strip() or memory.stderr.strip(), required=False)

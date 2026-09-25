@@ -2,7 +2,7 @@
 
 面向 **Windows 11 + NVIDIA GPU** 的本地短视频生成软件。原始目标为 RTX 5090，现提供 **RTX 4070 Super 12GB 显存 / 32GB 系统内存实验配置**。在 macOS 开发和演示，在 Windows 由启动脚本安装运行环境和模型；输入一句故事梗概，生成分镜、中文旁白、竖屏视频与字幕。
 
-**当前版本为 0.1.0 测试版。macOS 的 34 项自动测试和 DEMO 流程已通过，Windows 安装及 4070S/5090 上的真实 Qwen → Kokoro → H3 链路尚未完成实机验收。** DEMO 使用标注色块和静音，不能证明真实模型的画质、速度或成功率。
+**当前版本为 0.1.0 测试版。macOS 的 36 项自动测试和 DEMO 流程已通过，Windows 安装及 4070S/5090 上的真实 Qwen → Kokoro → H3 链路尚未完成实机验收。** DEMO 使用标注色块和静音，不能证明真实模型的画质、速度或成功率。
 
 仓库：[kuguya-AI-app-develop/YKI-video-generator](https://github.com/kuguya-AI-app-develop/YKI-video-generator)。当前为公开仓库，可直接克隆。逐个模型的运行条件、官方依据和 4070S 试跑步骤见 [硬件核查与实验配置](docs/HARDWARE.md)。安装器已撤销约 32GB 显存硬门槛；128GB 系统内存也不是统一最低要求。
 
@@ -46,10 +46,12 @@ uv pip install --python .venv/bin/python Pillow==12.3.0
 ### Windows 部署与开发
 
 1. 克隆仓库到可写本地磁盘，例如 `D:\YKI-video-generator`；也可解压 `YKI-video-generator-0.1.0-windows.zip`。不要从 ZIP 预览窗口内启动。
-2. 准备 Windows 11 x64 和 NVIDIA GPU。4070S / 32GB 内存先按 [实验步骤](docs/HARDWARE.md)复制 `config/experimental-4070s-32gb.json` 到个人配置，再启动安装。低于约 32GB 显存时安装器会提示实验风险，允许继续。运行 `nvidia-smi`，其 `CUDA Version` 必须至少为 **13.3**。驱动不足时从 [NVIDIA 官方网站](https://www.nvidia.com/en-us/drivers/)更新并重启，无需额外安装 CUDA Toolkit。
+2. 准备 Windows 11 x64 和 NVIDIA GPU。4070S / 32GB 内存先按 [实验步骤](docs/HARDWARE.md)复制 `config/experimental-4070s-32gb.json` 到个人配置，再启动安装；已有 `settings.local.json` 时手动合并，避免覆盖自己的设置。低于约 32GB 显存时安装器会提示实验风险，允许继续。运行 `nvidia-smi`，其 `CUDA Version` 或 `CUDA UMD Version` 必须至少为 **13.3**。驱动不足时从 [NVIDIA 官方网站](https://www.nvidia.com/en-us/drivers/)更新并重启，无需额外安装 CUDA Toolkit。
 3. 首次安装至少预留 **100 GiB** 磁盘空间。系统内存没有经本项目实测确认的统一最低值；32GB 需配合卸载与磁盘读取进行实验，不能保证只降低速度而不会内存不足。视频、历史版本和换页会继续占用磁盘。
 4. 双击 `Start-Windows.bat`，首次自动进入安装器；也可先双击 `Install-Windows.bat` 单独安装。
 5. 安装完成后打开 [本地创作台](http://127.0.0.1:8765)。先完成「流程演示」「3 镜头」，再新建「真实生成」项目。
+
+提示符形如 `D:\YKI-video-generator>` 时使用 CMD 命令；`PS D:\YKI-video-generator>` 才是 PowerShell。`Copy-Item` 只能用于 PowerShell，CMD 请用 `copy`。[实验步骤](docs/HARDWARE.md#为-4070s-32gb-开始试跑)提供两种终端的配置和启动命令，已有克隆先 `git pull --ff-only` 更新。若旧安装器报 `Cannot determine driver CUDA compatibility from nvidia-smi.`，而 `nvidia-smi` 显示 `CUDA UMD Version: 13.4`，先更新项目再重试；13.4 已满足版本门槛，不需要因此重装驱动。
 
 固定资产清单的模型和运行时压缩包约 **57.63 GiB**，另需 Python、依赖及解压空间。下载需要访问 GitHub、Hugging Face 和 PyPI。没有内置收费 API，无需模型 API Key。源码仓库和 ZIP 均不含模型，首次克隆不等于模型已经安装。
 
@@ -144,7 +146,7 @@ node --check web/app.js
 .venv/bin/python scripts/package.py
 ```
 
-Windows 已安装环境使用 `.\runtime\app-env\Scripts\python.exe` 替换上述 Python 路径。若系统 PATH 没有 FFmpeg/FFprobe，媒体测试会被跳过；请检查 skipped 数为 0，以覆盖媒体测试；2026-09-16 的基线为 28 项，新增硬件配置测试后的实际计数见验证记录。在 Windows 可把安装生成的 FFmpeg `bin` 目录加入当前终端 PATH 再测，详见 `config/models.lock.json` 的运行时路径。
+Windows 已安装环境使用 `.\runtime\app-env\Scripts\python.exe` 替换上述 Python 路径。若系统 PATH 没有 FFmpeg/FFprobe，媒体测试会被跳过；安装器驱动检测测试还需要 `powershell.exe`（Windows 自带）或 `pwsh`。请检查 skipped 数及原因；最新计数与执行环境见验证记录。在 Windows 可把安装生成的 FFmpeg `bin` 目录加入当前终端 PATH 再测，详见 `config/models.lock.json` 的运行时路径。
 
 打包输出 `dist/YKI-video-generator-0.1.0-windows.zip` 及 `.zip.sha256`。包内 `PACKAGE_MANIFEST.json` 记录逐文件哈希；只包含白名单源码、启动脚本、配置、工作流、测试和文档，排除模型、项目视频、运行环境、日志、本机设置与 Git 数据。ZIP 是源码启动包，并非已编译 EXE。
 

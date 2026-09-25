@@ -1,0 +1,14 @@
+[
+  {"name": "reported_umd_13_4", "stdout": "| NVIDIA-SMI 616.92                 KMD Version: 616.92        CUDA UMD Version: 13.4     |", "exit_code": 0, "compatible": true},
+  {"name": "legacy_minimum_13_3", "stdout": "| NVIDIA-SMI 610.00    Driver Version: 610.00    CUDA Version: 13.3 |", "exit_code": 0, "compatible": true},
+  {"name": "umd_minimum_13_3", "stdout": "CUDA UMD Version: 13.3", "exit_code": 0, "compatible": true},
+  {"name": "multiline_legacy", "stdout": "NVIDIA-SMI\r\nCUDA Version                            : 13.3\r\nGPU details", "exit_code": 0, "compatible": true},
+  {"name": "umd_whitespace", "stdout": "CUDA\tUMD  Version :\t13.4", "exit_code": 0, "compatible": true},
+  {"name": "next_major", "stdout": "CUDA UMD Version: 14.0", "exit_code": 0, "compatible": true},
+  {"name": "legacy_too_old", "stdout": "CUDA Version: 12.9", "exit_code": 0, "compatible": false, "error": "needs driver CUDA compatibility >= 13.3"},
+  {"name": "umd_too_old", "stdout": "CUDA UMD Version: 13.2", "exit_code": 0, "compatible": false, "error": "needs driver CUDA compatibility >= 13.3"},
+  {"name": "not_available", "stdout": "CUDA UMD Version: N/A", "exit_code": 0, "compatible": false, "error": "Cannot determine driver CUDA compatibility"},
+  {"name": "empty_output", "stdout": "", "exit_code": 0, "compatible": false, "error": "Cannot determine driver CUDA compatibility"},
+  {"name": "driver_version_is_not_cuda", "stdout": "NVIDIA-SMI 616.92    KMD Version: 616.92", "exit_code": 0, "compatible": false, "error": "Cannot determine driver CUDA compatibility"},
+  {"name": "command_failed_with_version", "stdout": "CUDA UMD Version: 13.4", "exit_code": 9, "compatible": false, "error": "nvidia-smi failed"}
+]

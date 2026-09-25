@@ -48,3 +48,18 @@
 在 macOS 执行新增硬件配置测试 6 项、完整 unittest 34 项，全部通过且 0 skipped（完整回归耗时 10.734 秒）；`compileall -q app scripts tests` 通过。新增测试验证 llama 自动/手动 GPU 层数、配置校验、Comfy 磁盘辅助开关、localhost/单并发约束、个人配置合并与 384×672 工作流参数，不启动真实模型。
 
 官方运行条件核查及社区报告见 [HARDWARE.md](HARDWARE.md)。本机没有 PowerShell 或 NVIDIA GPU，未运行 Windows 安装器、CUDA、真实 Qwen/Kokoro/H3 或峰值内存/速度测试。4070S / 32GB RAM 配置仍为实验性，测试通过不表示目标机器已经成片。
+
+## 2026-09-25 CUDA UMD 标题兼容修复
+
+用户在 Windows 11 / RTX 4070 Super 上提供的 `nvidia-smi` 标题为 `NVIDIA-SMI 616.92 / KMD Version: 616.92 / CUDA UMD Version: 13.4`。旧安装器与 doctor 仅识别 `CUDA Version:`，因此错误阻止安装；13.4 已满足锁定运行时要求的 13.3。保留此版本门槛，兼容两种标题和空白变体，补充 CMD 配置复制说明。
+
+在 macOS 使用 Python 3.12、FFmpeg 和校验过官方 SHA256 的便携 PowerShell 7.6.6 执行：
+
+- 修改前，用上述原始标题在安装器真实检测代码和 doctor 中分别复现失败；测试仅保留标题，不包含用户进程列表或个人路径。
+- 修改后完整 unittest **36 项通过，0 skipped，11.222 秒**。两项新回归使用同一组 12 个样例，覆盖 UMD / 旧标题、13.3 边界、低版本、空值、N/A 和命令失败。安装器测试从 PowerShell AST 提取实际检测代码，模拟 `nvidia-smi` 输出，不运行安装、下载或 GPU。
+- `compileall -q app scripts tests`、`node --check web/app.js`、`git diff --check` 通过。
+- `pwsh -NoProfile -File scripts/bootstrap.ps1 -Plan` 通过；CodeGraph 更新至 25 个源码文件、409 个节点。
+
+复现命令：将 PowerShell 加入当前终端 PATH 后运行 `python -m unittest discover -s tests -p test_nvidia_driver.py -v`；完整回归去掉 `-p`。没有 `powershell.exe` 或 `pwsh` 时安装器回归会明确跳过。本地便携测试运行时位于忽略的 `dist/`，不进入 Git 或源码包。
+
+**未测试**：Windows PowerShell 5.1 上的完整安装、Windows CMD 指令实机执行、GPU CUDA 运算与真实模型生成。本次修复通过只证明已知标题能被正确识别；目标设备需拉取更新后继续安装验收。
