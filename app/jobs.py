@@ -32,8 +32,11 @@ class JobManager:
                     return project
                 project.update(status="queued", stage="已加入生成队列", error=None, cancel_requested=False)
                 self.store.save(project)
-            self.events[project_id] = threading.Event()
-            self.queue.put(project_id)
+            event = threading.Event()
+            self.events[project_id] = event
+            # Keep each submission's identity: a cancelled queued project may
+            # be edited and submitted again before its old queue entry drains.
+            self.queue.put((project_id, event))
             return project
 
     def cancel(self, project_id: str) -> dict:
@@ -41,17 +44,25 @@ class JobManager:
             event = self.events.get(project_id)
             if event:
                 event.set()
+                if self.active_project != project_id:
+                    project = self.store.update(project_id, lambda p: p.update(
+                        status="cancelled", cancel_requested=False,
+                        stage="排队任务已取消，可编辑后继续", error=None))
+                    self.events.pop(project_id)
+                    return project
                 return self.store.update(project_id, lambda p: p.update(cancel_requested=True, stage="正在停止，已完成镜头会保留"))
             return self.store.get(project_id)
 
     def _work(self):
         while not self.stopping.is_set():
             try:
-                project_id = self.queue.get(timeout=0.5)
+                project_id, event = self.queue.get(timeout=0.5)
             except queue.Empty:
                 continue
             with self.lock:
-                event = self.events[project_id]
+                if self.events.get(project_id) is not event:
+                    self.queue.task_done()
+                    continue
                 self.active_project = project_id
             try:
                 if event.is_set():

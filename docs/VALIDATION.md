@@ -63,3 +63,14 @@
 复现命令：将 PowerShell 加入当前终端 PATH 后运行 `python -m unittest discover -s tests -p test_nvidia_driver.py -v`；完整回归去掉 `-p`。没有 `powershell.exe` 或 `pwsh` 时安装器回归会明确跳过。本地便携测试运行时位于忽略的 `dist/`，不进入 Git 或源码包。
 
 **未测试**：Windows PowerShell 5.1 上的完整安装、Windows CMD 指令实机执行、GPU CUDA 运算与真实模型生成。本次修复通过只证明已知标题能被正确识别；目标设备需拉取更新后继续安装验收。
+
+## 2026-09-30 排队任务取消回归
+
+在 Linux / Python 3.12.14 / Pillow 12.3.0 / FFmpeg 7.1.5 验证：
+
+- 修复前新增回归失败：第一个项目运行时取消第二个排队项目，其状态仍为 `queued`，无法立即编辑或重新提交。
+- 修复后排队任务立即进入 `cancelled`，可以编辑并重新入队；旧队列项不会误执行或移除新提交，活动任务不受影响。运行中任务仍须等待管线退出后才能重新提交。
+- 完整 unittest 38 项：37 项通过，1 项因没有 PowerShell 而跳过；包含真实 FFmpeg DEMO/媒体测试。新增队列测试 2 项均通过。
+- `compileall -q app scripts tests`、`node --check web/app.js`、`git diff --check` 通过。
+
+未测试 Windows 安装器、CUDA 或真实模型。未下载模型；队列回归采用本地假管线，只验证任务状态与排队行为。
