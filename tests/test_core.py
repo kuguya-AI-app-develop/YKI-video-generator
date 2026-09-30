@@ -27,6 +27,15 @@ class CoreStateTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.store = Store(Path(self.temp.name))
 
+    def test_shot_count_must_be_an_integer_before_project_is_saved(self):
+        for count in (3.0, 6.0, "3", True, None):
+            with self.subTest(count=count):
+                with self.assertRaisesRegex(ValueError, "镜头数量"):
+                    self.store.create("测试故事", "demo", count)
+        self.assertEqual([], self.store.list())
+        for count in (3, 6):
+            self.assertEqual(count, self.store.create("测试故事", "demo", count)["shot_count"])
+
     def test_recovery_preserves_finished_shots_and_locked_edits_fail(self):
         project = self.store.create("雨夜里的一封信", "demo", 3)
         project.update(status="running", shots=[{"id": "S01", "prompt": "old", "narration": "旧旁白", "locked": True, "status": "completed", "versions": ["v001"]}])
@@ -165,6 +174,21 @@ class HTTPTests(unittest.TestCase):
         self.addCleanup(self.server.server_close)
         self.addCleanup(self.server.shutdown)
         self.url = f"http://127.0.0.1:{self.server.server_port}"
+
+    def test_fractional_json_shot_count_is_rejected_without_queuing_or_saving(self):
+        with patch.object(self.app.jobs, "enqueue", return_value={}) as enqueue:
+            for count in (3.0, 6.0):
+                with self.subTest(count=count):
+                    request = urllib.request.Request(
+                        self.url + "/api/projects",
+                        data=json.dumps({"prompt": "测试故事", "mode": "demo", "shot_count": count}).encode(),
+                        headers={"Content-Type": "application/json"},
+                    )
+                    with self.assertRaises(urllib.error.HTTPError) as caught:
+                        urllib.request.urlopen(request)
+                    self.assertEqual(400, caught.exception.code)
+            enqueue.assert_not_called()
+        self.assertEqual([], self.app.store.list())
 
     def test_cross_site_mutation_and_host_spoofing_are_rejected(self):
         req = urllib.request.Request(self.url + "/api/projects", data=b'{}', headers={"Content-Type": "application/json", "Origin": "https://evil.example"})
