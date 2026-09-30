@@ -54,7 +54,7 @@ class Store:
     def create(self, prompt: str, mode: str, shot_count: int = 6) -> dict:
         if not isinstance(prompt, str) or not 1 <= len(prompt.strip()) <= 4000:
             raise ValueError("请输入 1–4000 字的故事梗概")
-        if mode not in {"real", "demo"} or shot_count not in {3, 6}:
+        if mode not in {"real", "demo"} or type(shot_count) is not int or shot_count not in {3, 6}:
             raise ValueError("无效的生成模式或镜头数量")
         project = {"schema_version": 1, "id": uuid.uuid4().hex[:12], "prompt": prompt.strip(),
                    "mode": mode, "shot_count": shot_count, "title": prompt.strip()[:30],
