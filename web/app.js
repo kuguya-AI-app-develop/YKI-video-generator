@@ -154,12 +154,18 @@ function renderShot(shot, running) {
     retry.addEventListener("click", () => shotAction(shot.id, "retry"));
     versions.addEventListener("change", () => shotAction(shot.id, "select"));
   }
-  if (!editor.dirty && !editor.card.contains(document.activeElement)) {
-    editor.prompt.value = shot.prompt || ""; editor.narration.value = shot.narration || ""; editor.locked.checked = Boolean(shot.locked);
+  if (!editor.dirty) {
+    // Focus can remain on the history selector after restoring a version.
+    // Protect unsaved edits, but keep clean fields aligned with saved state.
+    for (const key of ["prompt", "narration"]) {
+      const value = shot[key] || "";
+      if (editor[key].value !== value) editor[key].value = value;
+    }
+    editor.locked.checked = Boolean(shot.locked);
   }
   editor.status.textContent = statusNames[shot.status] || shot.status || "";
   const versionKey = JSON.stringify([shot.versions, shot.selected_version]);
-  if (editor.versionKey !== versionKey && document.activeElement !== editor.versions) {
+  if (editor.versionKey !== versionKey) {
     const versions = shot.versions || [];
     editor.versions.replaceChildren(...(versions.length ? versions.map(version => {
       const option = node("option", "", version.id); option.value = version.id; return option;
