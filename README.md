@@ -39,7 +39,7 @@ uv pip install --python .venv/bin/python Pillow==12.3.0
 .venv/bin/python -m app serve --mode demo --open
 ```
 
-应用使用 Python 标准库 HTTP 服务，前端为原生 HTML/CSS/JavaScript，**不需要 npm install 或前端构建**。修改前端后刷新网页，修改 Python 后重启服务。Node.js 仅用于可选的 JavaScript 语法检查和 CodeGraph 开发工具。
+应用使用 Python 标准库 HTTP 服务，前端为原生 HTML/CSS/JavaScript，**不需要 npm install 或前端构建**。修改前端后刷新网页，修改 Python 后重启服务。Node.js 仅用于可选的 JavaScript 语法检查、编辑器状态回归和 CodeGraph 开发工具。
 
 `requirements.txt` 还包含真实配音及解压所需的 sherpa-onnx、py7zr；最小 Mac DEMO 环境只需 Pillow 与 FFmpeg。`requirements-windows.lock` 是 Windows x64 / Python 3.12 的完整哈希锁文件，不用于安装 Mac 环境。
 
@@ -143,10 +143,11 @@ docs/                      使用说明、架构、交接、验证与实机验�
 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python -m compileall -q app scripts tests
 node --check web/app.js
+node --test tests/test_editor_state.cjs
 .venv/bin/python scripts/package.py
 ```
 
-Windows 已安装环境使用 `.\runtime\app-env\Scripts\python.exe` 替换上述 Python 路径。若系统 PATH 没有 FFmpeg/FFprobe，媒体测试会被跳过；安装器驱动检测测试还需要 `powershell.exe`（Windows 自带）或 `pwsh`。请检查 skipped 数及原因；最新计数与执行环境见验证记录。在 Windows 可把安装生成的 FFmpeg `bin` 目录加入当前终端 PATH 再测，详见 `config/models.lock.json` 的运行时路径。
+Windows 已安装环境使用 `.\runtime\app-env\Scripts\python.exe` 替换上述 Python 路径。若系统 PATH 没有 FFmpeg/FFprobe，媒体测试会被跳过；安装器驱动检测测试还需要 `powershell.exe`（Windows 自带）或 `pwsh`。Node.js 也用于编辑器状态回归，没有安装时对应 unittest 会明确跳过，不影响应用运行。请检查 skipped 数及原因；最新计数与执行环境见验证记录，编辑器专项范围见 [2026-09-30 状态回归](docs/VALIDATION_EDITOR_2026-09-30.md)。在 Windows 可把安装生成的 FFmpeg `bin` 目录加入当前终端 PATH 再测，详见 `config/models.lock.json` 的运行时路径。
 
 打包输出 `dist/YKI-video-generator-0.1.0-windows.zip` 及 `.zip.sha256`。包内 `PACKAGE_MANIFEST.json` 记录逐文件哈希；只包含白名单源码、启动脚本、配置、工作流、测试和文档，排除模型、项目视频、运行环境、日志、本机设置与 Git 数据。ZIP 是源码启动包，并非已编译 EXE。
 
